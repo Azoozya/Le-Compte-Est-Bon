@@ -1,0 +1,64 @@
+version: "3.7"
+services:
+
+  main_compilation:
+    image: main-compilation:latest
+    # resources:
+    #   limits:
+    #     cpus: '0.50'
+    #     memory: 500M
+    deploy:
+      replicas: 1
+    #   restart_policy:
+    #     condition: on-failure
+    networks:
+      - local
+    # volumes:
+    #   - bin:/exec
+
+  test_compilation:
+    image: test-compilation:latest
+    # resources:
+    #   limits:
+    #     cpus: '0.50'
+    #     memory: 500M
+    deploy:
+      replicas: 1
+    #   restart_policy:
+    #     condition: on-failure
+    networks:
+      - local
+    # volumes:
+    #     - bin:/exec
+
+  execution:
+    image: final:latest
+    # resources:
+    #   limits:
+    #     cpus: '0.50'
+    #     memory: 500M
+    deploy:
+      replicas: 1
+    #   restart_policy:
+    #     condition: on-failure
+    networks:
+      - local
+    # volumes:
+    #   - bin:/read
+    #   - output:/write
+
+networks:
+  local:
+# volumes:
+#   bin:
+#     driver_opts:
+#      driver: "local"
+#      type: "none"
+#      o: "bind"
+#      device: "../src/bin"
+#   output:
+#     driver_opts:
+#      driver: "local"
+#      type: "none"
+#      o: "bind"
+#      device: "../src/jsons"

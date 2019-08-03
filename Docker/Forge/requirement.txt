@@ -1,0 +1,32 @@
+1.0     Compilation-main :
+        Debian:latest
+        Read : None
+        Write : src/bin
+        Dependecies :
+            gcc
+            json-c (lib)
+            make
+        Items to copy :
+            src/main/main.tar
+              -> source_code
+              -> script.sh
+
+1.1/2.0 Compilation-test :
+        Debian:latest
+        Read : None
+        Write : Docker/bin
+        Dependecies :
+            gcc
+            json-c (lib)
+            make
+        Items to copy :
+            src/test/test.tar
+              -> source_code
+              -> script.sh
+
+2.0/3.0 Execution(Linux):
+        Debian:latest
+        Read : src/bin
+        Write : src/jsons
+        Dependecies : None
+        Items to copy : None
