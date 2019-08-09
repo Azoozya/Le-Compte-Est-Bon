@@ -18,6 +18,8 @@
 #include <errno.h>
 
 #define DLL_EXPORT __declspec(dllexport)
+#define ERROR 63336
+#define NOTHING 36663
 #define SIZE 50
 #define min(a,b) (a<=b?a:b)
 #define max(a,b) (((a)>(b))?(a):(b))
@@ -118,3 +120,4 @@ void recursive(float* table_value,chenille* head,int* table_quantity,int* propos
 unsigned long get_id_with_value(float value,unsigned long id,facture* input);
 void my_memcpy(unsigned int* dest,unsigned int* src,unsigned int size);
 void reset(char* array,int length);
+}
