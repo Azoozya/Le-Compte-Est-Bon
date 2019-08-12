@@ -130,10 +130,7 @@ namespace v8
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
-	Local<String> str = Local<String>::Cast(args[0]);
-	String::Utf8Value utfValue(str);
-	// Lceb("Input.json");
-	args.GetReturnValue().Set(num);
+  Lceb("Input.json");
 }
 
 //On associe le nom 'sum' à la fonction Sum et on l'exporte.
