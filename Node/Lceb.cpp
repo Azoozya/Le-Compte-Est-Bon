@@ -127,11 +127,8 @@ namespace v8
 {
 
 // Crée une méthode
-void Lceb_addon(const v8::FunctionCallbackInfo<v8::Value>& args)
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
-    v8::Isolate* isolate = args.GetIsolate();
-	Lceb("Input.json");
   Isolate* isolate = args.GetIsolate();
 	Local<String> str = Local<String>::Cast(args[0]);
 	String::Utf8Value utfValue(str);
@@ -140,14 +137,12 @@ void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 }
 
 //On associe le nom 'sum' à la fonction Sum et on l'exporte.
-void Initialize(v8::Local<v8::Object>exports)
 void Initialize(Local<Object>exports)
 {
   NODE_SET_METHOD(exports,"Lceb",Lceb_addon);
 }
 
 NODE_MODULE(addon,Initialize);
-
 }
 extern "C"
 {
