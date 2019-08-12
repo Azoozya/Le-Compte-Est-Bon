@@ -16,16 +16,11 @@
 }
 C'est le fichier de configuration pour le build avec node-gyp
 4: Créer le fichier source de l'addon en .cc/.cpp (cela revient au même),
-Structure minimale du fichier :
 --------------------------------------------------------------------------------
 //On crée la/les méthode(s). ! On ne peut pas exporter de classes !
 void fonction(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
-    ####
-    Le code de la fonction
-    ####
-    args.GetReturnValue().Set(total);
 }
 
 //On associe le nom 'fun' à la méthode "fonction" et on l'exporte.
@@ -42,7 +37,6 @@ Ce qui crée le dossier build/ et les fichiers nécessaire au build.
   - node-gyp build
 Ce qui crée le dossier build/Release/ et construit le projet
 
-6: Pour appeler l'addon dans un code js il faut ajouter au début .js:
 const addon = require('./build/Release/test');
 puis au moment voulu : addon.fun();
 

@@ -10,6 +10,15 @@
 #include <time.h>
 #include <errno.h>
 
+using v8::FunctionCallbackInfo;
+using v8::Isolate;
+using v8::Local;
+using v8::NewStringType;
+using v8::Number; // Type V8
+using v8::Object; // Type V8
+using v8::String; // Type V8
+using v8::Value;  // Type V8
+
 #define DLL_EXPORT __declspec(dllexport)
 #define ERROR 63336
 #define NOTHING 36663
@@ -114,21 +123,32 @@ extern "C"
 	void my_memcpy(unsigned int* dest, unsigned int* src, unsigned int size);
 	void reset(char* array, int length);
 }
+namespace v8
+{
+
 // Crée une méthode
 void Lceb_addon(const v8::FunctionCallbackInfo<v8::Value>& args)
+void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
 	Lceb("Input.json");
+  Isolate* isolate = args.GetIsolate();
+	Local<String> str = Local<String>::Cast(args[0]);
+	String::Utf8Value utfValue(str);
+	// Lceb("Input.json");
+	args.GetReturnValue().Set(num);
 }
 
 //On associe le nom 'sum' à la fonction Sum et on l'exporte.
 void Initialize(v8::Local<v8::Object>exports)
+void Initialize(Local<Object>exports)
 {
   NODE_SET_METHOD(exports,"Lceb",Lceb_addon);
 }
 
 NODE_MODULE(addon,Initialize);
 
+}
 extern "C"
 {
 	void Lceb(char* filename)
