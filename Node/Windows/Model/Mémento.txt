@@ -1,0 +1,67 @@
+﻿1 : Installer NodeJS depuis : https://nodejs.org/en/download/
+
+2: Dans un shell (Windows ou unix):
+  - npm install -g node-gyp
+  node-gyp est un compilateur pour addon node.js cross-platform : https://github.com/nodejs/node-gyp
+  Une alternative à "node-gyp" serait "nan" : https://github.com/nodejs/nan
+
+3: Créer un fichier .gyp et le remplir selon le modèle :
+{
+    "targets":[
+        {
+            "target_name": "le_nom_de_mon_addon",
+            "sources": ["le_fichier_source.cc"]
+        }
+    ]
+}
+C'est le fichier de configuration pour le build avec node-gyp
+4: Créer le fichier source de l'addon en .cc/.cpp (cela revient au même),
+Structure minimale du fichier : (les ## décrivent un commentaire)
+--------------------------------------------------------------------------------
+//On crée la/les méthode(s). ! On ne peut pas exporter de classes !
+using v8::FunctionCallbackInfo;
+using v8::Isolate;
+using v8::Local;
+using v8::NewStringType;
+using v8::Number; 
+using v8::Object; 
+using v8::String; 
+using v8::Value;  
+void fonction(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    ## nb_arguments = args.Length();
+    ## V8Type : Object,Boolean,Number,Array,String,Function,Null
+    ## args[i]->Is'V8Type'(), renvoie un booléen , remplacer 'V8Type' par ce que vous cherchez dans les types de v8 (si args[0] = 5 , args[0]->IsNumber() renvoie True)
+    ## args[i] , i entre 0 et (nb_arguments-1) pour obtenir le (i+1)-ème élément du tableau (i = 0 -> 1er élément , i = 1 -> 2ème ...)
+    ## 'C++Type' variable = args[0].As<'V8Type'>()->Value();  pour passer le contenue de args[0] 'V8Type' dans la variable 'C/C++Type'
+    
+	Le code de la fonction
+   
+    ## Local<'V8Type'> to_return = 'V8Type'::New(isolate, variable); pour passer le contenue de la variable C/C++ dans le to_return en js
+    ##args.GetReturnValue().Set(to_return);
+}
+
+//On associe le nom 'fun' à la méthode "fonction" et on l'exporte.
+void Initialize(v8::Local<v8::Object>exports)
+{
+  NODE_SET_METHOD(exports,"fun",fonction);
+}
+
+NODE_MODULE(addon,Initialize);
+--------------------------------------------------------------------------------
+5: Dans un shell (Windows ou Unix) :
+  - node-gyp configure
+Ce qui crée le dossier build/ et les fichiers nécessaire au build.
+  - node-gyp build
+Ce qui crée le dossier build/Release/ et construit le projet
+
+6: Pour appeler l'addon dans un code js il faut ajouter au début du .js:
+const addon = require('./build/Release/test');
+puis au moment voulu : addon.fun();
+
+7: Pour lancer le programme , dans un terminale (Windows ou Unix)
+  - node code.js
+
+
+Un exemple est à disposition , source :https://www.youtube.com/watch?v=VPhPOEpZ3cI
