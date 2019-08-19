@@ -71,6 +71,7 @@ extern "C"
 
 	// référencer ici les en-têtes supplémentaires nécessaires à votre programme
 
+	void Lceb(long serial);
 	void merging(int low, int mid, int high, float* table_value);
 	void sort(int low, int high, float* table_value);
 
@@ -103,9 +104,13 @@ extern "C"
 
 	float evaluation(counter* head);
 
+	unsigned long get_nb_values(char* filename);
+	unsigned long get_nb_ID(char* filename);
+	float get_price(char* filename);
 
 	//Lceb_main.c ------------------------------------------------------------------
 
+	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity,char* filename);
 	unsigned long parse_input_json(facture* head, char* fiile_name, float* target);
 	void extract_values_from_json(char* filename, float* table_value, unsigned long nb_value);
 	void extract_ID_from_json(char* filename, unsigned long* table_id, unsigned long nb_ID);
@@ -116,6 +121,11 @@ extern "C"
 	unsigned long get_id_with_value(float value, unsigned long id, facture* input);
 	void my_memcpy(unsigned int* dest, unsigned int* src, unsigned int size);
 	void reset(char* array, int length);
+
+	char* long_to_char(long serial);
+	char* reverse_and_convert(int* table_value,long length);
+	char digit_convert(int digit);
+	char* getOutputFileName(char* inputFileName);
 }
 namespace v8
 {
@@ -124,8 +134,11 @@ namespace v8
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
+	double serial = args[0].As<Number>()->Value();
+	Lceb(serial);
 }
 
+//On associe le nom 'Lceb' à la fonction Lceb_addon et on l'exporte.
 void Initialize(Local<Object>exports)
 {
   NODE_SET_METHOD(exports,"Lceb",Lceb_addon);
@@ -135,7 +148,9 @@ NODE_MODULE(addon,Initialize);
 }
 extern "C"
 {
+	void Lceb(long serial)
 	{
+    char* filename = long_to_char(serial);
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
 		facture* input = (facture *)malloc(sizeof(facture));
@@ -167,6 +182,8 @@ extern "C"
 				proposition_recursive(head, facture, max_quantity, price); //isOk
 
 				//On écrit chacunes des propositions qui ont été stockées dans la liste chaînée stack/chenille->feet de chaque cellule
+				printf("[ 90-95 ]Ecriture des résultats dans %s.json.\n",filename);
+				road_to_the_text_file(input, head, max_quantity,filename); //isOk
 
 				/*Une fois le .json crée et rempli on free toutes les allocations:
 				  -Chenille : chaque cellule ->chenille* ->chenille* ->stack*
@@ -179,6 +196,7 @@ extern "C"
 			}
 		}
 		delete_facture(input);
+		free(filename);
 	}
 
 /* -------------------------------------------- */
@@ -778,8 +796,11 @@ extern "C"
 		}
 	}
 
+	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity,char* filename)
 	{
 		FILE* Out;
+		char* file = getOutputFileName(filename);
+		errno_t err = fopen_s(&Out,file, "w");
 		chenille* chenille_part;
 		stack* stack_part;
 		counter* cell;
@@ -959,11 +980,13 @@ extern "C"
 		}
 	}
 
+	unsigned long get_nb_values(char* filename)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
 		FILE* In;
+		errno_t err = fopen_s(&In,filename, "r");
 		while (!(indicator) && element != '}')
 		{
 			do {
@@ -1027,11 +1050,13 @@ extern "C"
 		return nb_elements;
 	}
 
+	unsigned long get_nb_ID(char* filename)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
 		FILE* In;
+		errno_t err = fopen_s(&In,filename, "r");
 		while (!(indicator) && element != '}')
 		{
 			do {
@@ -1083,11 +1108,13 @@ extern "C"
 		return nb_elements;
 	}
 
+	float get_price(char* filename)
 	{
 		float price = 1.0;
 		int nb_digits = 0;
 		char element = '\0';
 		FILE* In;
+		errno_t err = fopen_s(&In,filename, "r");
 		short indicator = 0;
 		char buffer[50];
 		while (!(indicator) && element != '}')
@@ -1386,4 +1413,106 @@ extern "C"
 		}
 	}
 
+
+	//  Pour la conversion nombre -> char*
+	char* long_to_char(long serial)
+	{
+	  char* to_return = NULL;
+	//Détermine le nombre de chiffre(s)
+	  if (serial < 0)
+	    {
+	      serial = serial*(-1);
+	    }
+	  if (serial < 10 && serial >= 0)
+	    {
+	      to_return = (char*)malloc(sizeof(char));
+	      to_return[0] = digit_convert(serial);
+	    }
+	  else
+	    {
+	      long max_power = 2;
+	      while(serial >= pow(10,max_power))
+	        {
+	          max_power++;
+	        }
+	    //On récupère chacun des chiffres et on les met dans un tableau
+	    int* table_value = (int*)malloc(max_power*sizeof(int));
+	    for (int depth = 0 ; depth < max_power ; depth++)
+	      {
+	        table_value[depth] = 0;
+	      }
+	    for (long power = (max_power-1) ; power >= 0 ; power--)
+	          {
+	            table_value[power] = serial/pow(10,power);
+	            serial -=  table_value[power]*pow(10,power);
+	          }
+	   to_return = reverse_and_convert(table_value,max_power);
+	    }
+	  return to_return;
+	}
+
+	//Prend un tableau d'entier pour les convertir en char , [1,2,3] -> "123"
+	char* reverse_and_convert(int* table_value,long length)
+	{
+	  char* buffer = (char*)malloc(length*sizeof(char));
+	  for (int i = 0 ; i < length ; i++ )
+	    {
+	      buffer[length-i-1] = digit_convert(table_value[i]);
+	    }
+	  return buffer;
+	}
+	//Fais la conrrespondance chiffre char , 1 -> '1'
+	char digit_convert(int digit)
+	{
+	  switch (digit) {
+	    case 0:
+	      return '0';
+	      break;
+	    case 1:
+	        return '1';
+	        break;
+	    case 2:
+	          return '2';
+	          break;
+	    case 3:
+	            return '3';
+	            break;
+	    case 4:
+	              return '4';
+	              break;
+	    case 5:
+	                return '5';
+	                break;
+	    case 6:
+	              return '6';
+	              break;
+	    case 7:
+	            return '7';
+	            break;
+	    case 8:
+	          return '8';
+	          break;
+	    case 9:
+	        return '9';
+	        break;
+	    default:
+	      return '\0';
+	      break;
+	  }
+	}
+	//  Pour la conversion nombre -> char*
+	char* getOutputFileName(char* inputFileName)
+	{
+	  char* extension = (char*)malloc(5*sizeof(char));
+	  extension[0]='.';
+	  extension[1]='j';
+	  extension[2]='s';
+	  extension[3]='o';
+	  extension[4]='n';
+	  int lenght = strlen(inputFileName);
+	  char* output = (char*)malloc((lenght+5)*sizeof(char));
+	  output = strcat(inputFileName,extension);
+	  free(extension);
+	  return output;
+	}
 }
