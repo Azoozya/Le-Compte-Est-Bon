@@ -2,6 +2,8 @@
 var addon = require('Lceb');
   var express = require('express');
   var util = require('util');
+  var fs = require('fs');
+  var stream = require('stream');
   var handle = express();
   handle.use(express.json()); // for parsing application/json
   handle.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -18,6 +20,9 @@ var addon = require('Lceb');
     var string = number.toString();
     console.log('%d',number);
     //On crée le fichier avec le nom  qu'on vient de générer
+    var fd = fs.openSync(string,'w');
+    //On met le contenu du req.body dans le fichier
+    fs.writeFile(fd,JSON.stringify(req.body), (err)=>{if(err) {return console.log(err);}});
 
 
     //En cas d'erreur
@@ -34,4 +39,11 @@ var addon = require('Lceb');
   }                             );
 
 
+  var express = require('express');
+  var handle = express();
+  handle.use(express.json()); // for parsing application/json
+  handle.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+  handle.post('/', function (req, res) {
+    console.log(req.body);
+    res.json(req.body);
   });
