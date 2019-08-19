@@ -1,5 +1,4 @@
 // Lceb.cpp : Définit les fonctions exportées pour l'addon node.
-//
 
 #include <node.h>
 #include <windows.h>
@@ -72,7 +71,6 @@ extern "C"
 
 	// référencer ici les en-têtes supplémentaires nécessaires à votre programme
 
-	void Lceb(char* filename);
 	void merging(int low, int mid, int high, float* table_value);
 	void sort(int low, int high, float* table_value);
 
@@ -105,13 +103,9 @@ extern "C"
 
 	float evaluation(counter* head);
 
-	unsigned long get_nb_values(char* file_name);
-	unsigned long get_nb_ID(char* file_name);
-	float get_price(char* file_name);
 
 	//Lceb_main.c ------------------------------------------------------------------
 
-	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity);
 	unsigned long parse_input_json(facture* head, char* fiile_name, float* target);
 	void extract_values_from_json(char* filename, float* table_value, unsigned long nb_value);
 	void extract_ID_from_json(char* filename, unsigned long* table_id, unsigned long nb_ID);
@@ -130,21 +124,17 @@ namespace v8
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
-  Lceb("Input.json");
 }
 
-//On associe le nom 'sum' à la fonction Sum et on l'exporte.
 void Initialize(Local<Object>exports)
 {
   NODE_SET_METHOD(exports,"Lceb",Lceb_addon);
-  NODE_SET_METHOD(exports, "Hello", hello_world);
 }
 
 NODE_MODULE(addon,Initialize);
 }
 extern "C"
 {
-	void Lceb(char* filename)
 	{
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
@@ -177,8 +167,6 @@ extern "C"
 				proposition_recursive(head, facture, max_quantity, price); //isOk
 
 				//On écrit chacunes des propositions qui ont été stockées dans la liste chaînée stack/chenille->feet de chaque cellule
-				printf("[ 90-95 ]Ecriture des résultats dans Possibilities.json.\n");
-				road_to_the_text_file(input, head, max_quantity); //isOk
 
 				/*Une fois le .json crée et rempli on free toutes les allocations:
 				  -Chenille : chaque cellule ->chenille* ->chenille* ->stack*
@@ -790,10 +778,8 @@ extern "C"
 		}
 	}
 
-	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity)
 	{
 		FILE* Out;
-		errno_t err = fopen_s(&Out,"Possibilities.json", "w");
 		chenille* chenille_part;
 		stack* stack_part;
 		counter* cell;
@@ -973,13 +959,11 @@ extern "C"
 		}
 	}
 
-	unsigned long get_nb_values(char* file_name)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
 		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
 		while (!(indicator) && element != '}')
 		{
 			do {
@@ -1043,13 +1027,11 @@ extern "C"
 		return nb_elements;
 	}
 
-	unsigned long get_nb_ID(char* file_name)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
 		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
 		while (!(indicator) && element != '}')
 		{
 			do {
@@ -1101,13 +1083,11 @@ extern "C"
 		return nb_elements;
 	}
 
-	float get_price(char* file_name)
 	{
 		float price = 1.0;
 		int nb_digits = 0;
 		char element = '\0';
 		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
 		short indicator = 0;
 		char buffer[50];
 		while (!(indicator) && element != '}')

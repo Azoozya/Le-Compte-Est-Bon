@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4DF291E8-411D-4C2C-C1A7-38DBE81D8E58}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Lceb</RootNamespace>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
