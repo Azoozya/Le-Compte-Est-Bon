@@ -11,17 +11,11 @@ namespace Call_Dll
     class Program
     {
         [DllImport("Lceb.dll")]
-        unsafe public static extern void Lceb(char* filename);
-
-        unsafe static void call_Lceb(string arg)
-        {
-            char[] input = arg.ToCharArray();
-           Lceb(input);
-        }
+        public static extern void Lceb();
 
         static void Main(string[] args)
         {
-            call_Lceb(args[1]);
+            Lceb();
         }
     }
 }

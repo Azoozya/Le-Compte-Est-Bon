@@ -1,0 +1,14 @@
+﻿  stdafx.cpp
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\stdafx.h(27): warning C4005: 'min' : redéfinition de macro
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(197): note: voir la définition précédente de 'min'
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\stdafx.h(28): warning C4005: 'max' : redéfinition de macro
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(193): note: voir la définition précédente de 'max'
+  dllmain.cpp
+  Lceb.cpp
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\lceb.cpp(1060): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\lceb.cpp(1153): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\lceb.cpp(1319): warning C4244: '=' : conversion de 'double' en 'int', perte possible de données
+c:\users\nicolas grosjean\desktop\le-compte-est-bon\gen_dll\windows_src\call_dll\lceb\lceb.cpp(1320): warning C4244: '-=' : conversion de 'double' en 'long', perte possible de données
+  Génération de code en cours...
+     Création de la bibliothèque C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Debug\Lceb.lib et de l'objet C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Debug\Lceb.exp
+  Lceb.vcxproj -> C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Debug\Lceb.dll

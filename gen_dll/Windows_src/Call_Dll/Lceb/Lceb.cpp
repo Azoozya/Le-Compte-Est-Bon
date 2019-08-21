@@ -6,8 +6,21 @@
 
 extern "C"
 {
-	DLL_EXPORT void Lceb(char* filename)
+	DLL_EXPORT void Lceb(void)
 	{
+		//char* filename = long_to_char(serial);
+		char* filename = (char*)malloc(11 * sizeof(char));
+		filename[0] = 'I';
+		filename[1] = 'n';
+		filename[2] = 'p';
+		filename[3] = 'u';
+		filename[4] = 't';
+		filename[5] = '.';
+		filename[6] = 'j';
+		filename[7] = 's';
+		filename[8] = 'o';
+		filename[9] = 'n';
+		filename[10] = '\0';
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
 		facture* input = (facture *)malloc(sizeof(facture));
@@ -19,7 +32,7 @@ extern "C"
 		{
 			float price;
 			unsigned long max_quantity = parse_input_json(input, filename, &price); //isOk
-			if (max_quantity == ERROR)
+			if (max_quantity == IMPOSSIBLE)
 			{
 				printf("Pas autant de factures que d'ID:\n[%lu:Factures]\t[%lu:ID]\n", get_nb_values(filename), get_nb_ID(filename));
 			}
@@ -39,8 +52,8 @@ extern "C"
 				proposition_recursive(head, facture, max_quantity, price); //isOk
 
 				//On écrit chacunes des propositions qui ont été stockées dans la liste chaînée stack/chenille->feet de chaque cellule
-				printf("[ 90-95 ]Ecriture des résultats dans Possibilities.json.\n");
-				road_to_the_text_file(input, head, max_quantity); //isOk
+				printf("[ 90-95 ]Ecriture des résultats dans %s.json.\n", filename);
+				road_to_the_text_file(input, head, max_quantity, filename); //isOk
 
 				/*Une fois le .json crée et rempli on free toutes les allocations:
 				  -Chenille : chaque cellule ->chenille* ->chenille* ->stack*
@@ -53,11 +66,12 @@ extern "C"
 			}
 		}
 		delete_facture(input);
+		free(filename);
 	}
 
-/* -------------------------------------------- */
-			/* Lceb_chained_list.c */
-	//Génère une structure counter depuis un tableau de valeurs et un tableau de quantitées et le nombre d'éléments à regarder.
+	/* -------------------------------------------- */
+				/* Lceb_chained_list.c */
+		//Génère une structure counter depuis un tableau de valeurs et un tableau de quantitées et le nombre d'éléments à regarder.
 	counter* generate_stone_E(float* table_value, int* table_quantity, unsigned int length)
 	{
 		//On une brique élémentaire qui est la tête de la liste
@@ -66,10 +80,10 @@ extern "C"
 		int depth;
 
 		depth = 0;
-		for (int rank = 0; rank < length; rank++)
+		for (unsigned int rank = 0; rank < length; rank++)
 		{
 			//On génère une nouvelle brique élémentaire.
-			stone_E = (counter*) malloc(sizeof(counter));
+			stone_E = (counter*)malloc(sizeof(counter));
 			if (stone_E == NULL)
 			{
 				perror("Generate_stone_E , échec\n");
@@ -104,15 +118,15 @@ extern "C"
 
 		facture* input_retrieve = in;
 
-		table_value = (float*) malloc(max_quantity * sizeof(float));
-		table_quantity = (int*) malloc(max_quantity * sizeof(int));
+		table_value = (float*)malloc(max_quantity * sizeof(float));
+		table_quantity = (int*)malloc(max_quantity * sizeof(int));
 		if (table_value == NULL && table_quantity == NULL)
 		{
 			perror("Generate_stone_T , échec\n");
 		}
 		else
 		{
-			for (int rank = 0; rank < max_quantity; rank++)
+			for (unsigned int rank = 0; rank < max_quantity; rank++)
 			{
 				table_value[rank] = input_retrieve->value;
 				table_quantity[rank] = 1;
@@ -144,7 +158,7 @@ extern "C"
 	chenille* generate_chenille_part(int quantity, chenille* previous)
 	{
 		chenille* part;
-		part = (chenille*) malloc(sizeof(chenille));
+		part = (chenille*)malloc(sizeof(chenille));
 		if (part == NULL)
 		{
 			perror("Generate_chenille_part , échec\n");
@@ -156,7 +170,7 @@ extern "C"
 			part->previous = previous;
 			part->quantity_entities = 0;
 
-			part->feet = (stack*) malloc(sizeof(stack));
+			part->feet = (stack*)malloc(sizeof(stack));
 			part->feet->next = NULL;
 			part->feet->proposition = NULL;
 		}
@@ -173,8 +187,8 @@ extern "C"
 		float* table_value;
 		int* table_quantity;
 
-		table_value = (float*) malloc(max_rank * sizeof(float));
-		table_quantity = (int*) malloc(max_rank * sizeof(int));
+		table_value = (float*)malloc(max_rank * sizeof(float));
+		table_quantity = (int*)malloc(max_rank * sizeof(int));
 
 		if (table_value == NULL || table_quantity == NULL)
 		{
@@ -515,8 +529,8 @@ extern "C"
 	//Prend en entrée le pointeur sur structure chenille initialisé, pointeur sur la facture format counter déjà rempli et déjà filtrée.
 	void proposition_recursive(chenille* head, counter* facture, int max_quantity, float price)
 	{
-		float* table_value = (float*) malloc(max_quantity * sizeof(float));
-		int* table_quantity = (int*) malloc(max_quantity * sizeof(int));
+		float* table_value = (float*)malloc(max_quantity * sizeof(float));
+		int* table_quantity = (int*)malloc(max_quantity * sizeof(int));
 		if (table_value == NULL || table_quantity == NULL)
 		{
 			perror("Pas d'espace pour stocker les valeurs de références\n");
@@ -524,7 +538,7 @@ extern "C"
 		else
 		{
 			unsigned int subrank = extract_values_and_quantities_from_chained_list(table_value, table_quantity, facture, max_quantity);
-			int* proposition = (int*) malloc(subrank * sizeof(int));
+			int* proposition = (int*)malloc(subrank * sizeof(int));
 			if (proposition == NULL)
 			{
 				perror("Pas d'espace pour stocker des propositions\n");
@@ -558,7 +572,7 @@ extern "C"
 			proposition[depth] = goal;
 			for (int rank = 0; rank < subrank; rank++)
 				sum_qty += proposition[rank];
-			table = (int*) malloc(subrank * sizeof(int));
+			table = (int*)malloc(subrank * sizeof(int));
 			if (table == NULL)
 			{
 				perror("Pas d'espace pour stocker la table des quantitées pour la proposition.\n");
@@ -578,7 +592,7 @@ extern "C"
 					}
 					else
 					{
-						stack_part = (stack*) malloc(sizeof(stack));
+						stack_part = (stack*)malloc(sizeof(stack));
 						stack_part->proposition = counter_proposition;
 						stack_part->next = NULL;
 						(reach_last_stack(chenille_part->feet))->next = stack_part;
@@ -600,7 +614,7 @@ extern "C"
 			proposition[depth] = table_quantity[subrank - depth];
 			for (int rank = 0; rank < subrank; rank++)
 				sum_qty += proposition[rank];
-			table = (int*) malloc(subrank * sizeof(int));
+			table = (int*)malloc(subrank * sizeof(int));
 			if (table == NULL)
 			{
 				perror("Pas d'espace pour stocker la table des quantitées pour la proposition.\n");
@@ -620,7 +634,7 @@ extern "C"
 					}
 					else
 					{
-						stack_part = (stack*) malloc(sizeof(stack));
+						stack_part = (stack*)malloc(sizeof(stack));
 						stack_part->proposition = counter_proposition;
 						stack_part->next = NULL;
 						(reach_last_stack(chenille_part->feet))->next = stack_part;
@@ -652,10 +666,11 @@ extern "C"
 		}
 	}
 
-	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity)
+	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity, char* filename)
 	{
-		FILE* Out;
-		errno_t err = fopen_s(&Out,"Possibilities.json", "w");
+		std::ofstream Out;
+		char* file = getOutputFileName(filename);
+		Out.open(file);
 		chenille* chenille_part;
 		stack* stack_part;
 		counter* cell;
@@ -664,22 +679,22 @@ extern "C"
 		int qty_value;
 		int qty_element;
 
-		fprintf(Out, "{\n");
+		Out << "{\n";
 		for (int rank = 1; rank <= max_quantity; rank++)
 		{
 			chenille_part = reach_chenille(rank, head);
 			if (chenille_part->quantity_entities == 0)
 			{
-				fprintf(Out, "\t\t\t%c%d_element%c:{\t},\n\n", '"', rank, '"');
+				Out << "\t\t\t" << '"' << rank << "_element" << '"' << ":{\t},\n\n";
 			}
 			if (chenille_part->quantity_entities > 0)
 			{
-				fprintf(Out, "\t\t\t%c%d_element%c:{\n", '"', rank, '"');
+				Out << "\t\t\t" << '"' << rank << "_element" << '"' << ":{\n";
 				//Value:
-				fprintf(Out, "\t\t\t\t%cvalue%c:[\n", '"', '"');
-				for (int depth = 0; depth < chenille_part->quantity_entities; depth++)
+				Out << "\t\t\t\t" << '"' << "value" << '"' << ":[\n";
+				for (unsigned int depth = 0; depth < chenille_part->quantity_entities; depth++)
 				{
-					fprintf(Out, "\t\t\t\t\t\t\t\t[");
+					Out << "\t\t\t\t\t\t\t\t[";
 					stack_part = reach_stack(depth, chenille_part->feet);
 					subrank = 0;
 					qty_element = 1;
@@ -690,29 +705,29 @@ extern "C"
 						{
 							while (qty_value <= cell->quantity)
 							{
-								fprintf(Out, "%f", cell->value);
+								Out << cell->value;
 								qty_value++;
 								if (qty_element != rank)
 								{
-									fprintf(Out, ",");
+									Out << ",";
 									qty_element++;
 								}
 							}
 						}
 						subrank++;
 					} while (cell != reach_last_counter(stack_part->proposition));
-					fprintf(Out, "]");
+					Out << "]";
 					if (depth != (chenille_part->quantity_entities - 1))
-						fprintf(Out, ",\n");
+						Out << ",\n";
 					else
-						fprintf(Out, "\n");
+						Out << "\n";
 				}
-				fprintf(Out, "\t\t\t\t\t\t\t\t],\n");
+				Out << "\t\t\t\t\t\t\t\t],\n";
 				//ID:
-				fprintf(Out, "\t\t\t\t\t%cID%c:[\n", '"', '"');
-				for (int depth = 0; depth < chenille_part->quantity_entities; depth++)
+				Out << "\t\t\t\t\t" << '"' << "ID" << '"' << ":[\n";
+				for (unsigned int depth = 0; depth < chenille_part->quantity_entities; depth++)
 				{
-					fprintf(Out, "\t\t\t\t\t\t\t\t[");
+					Out << "\t\t\t\t\t\t\t\t[";
 					stack_part = reach_stack(depth, chenille_part->feet);
 					subrank = 0;
 					qty_element = 1;
@@ -726,31 +741,31 @@ extern "C"
 							while (qty_value <= cell->quantity)
 							{
 								id = get_id_with_value(cell->value, id, facture);
-								fprintf(Out, "%lu", id);
+								Out << id;
 								qty_value++;
 								if (qty_element != rank)
 								{
-									fprintf(Out, ",");
+									Out << ",";
 									qty_element++;
 								}
 							}
 						}
 						subrank++;
 					} while (cell != reach_last_counter(stack_part->proposition));
-					fprintf(Out, "]");
+					Out << "]";
 					if (depth != (chenille_part->quantity_entities - 1))
-						fprintf(Out, ",\n");
+						Out << ",\n";
 					else
-						fprintf(Out, "\n");
+						Out << "\n";
 				}
-				fprintf(Out, "\t\t\t\t\t\t\t ],\n");
-				fprintf(Out, "\t\t\t\t\t\t\t\t\t},\n\n");
+				Out << "\t\t\t\t\t\t\t ],\n";
+				Out << "\t\t\t\t\t\t\t\t\t},\n\n";
 			}
 			if (chenille_part->quantity_entities < 0)
 				printf("[c->json] Error , quantity_entities < 0\n");
 		}
-		fprintf(Out, "\n},%c", '\0');
-		fclose(Out);
+		Out << "\n}," << '\0';
+		Out.close();
 	}
 
 	//renvoie la première occurence après l'ID donnée de la value passée en argument dans la structure facture (trié dans l'ordre croissant)
@@ -768,7 +783,7 @@ extern "C"
 
 	void my_memcpy(unsigned int* dest, unsigned int* src, unsigned int size)
 	{
-		for (int rank = 0; rank < size; rank++)
+		for (unsigned int rank = 0; rank < size; rank++)
 		{
 			dest[rank] = src[rank];
 		}
@@ -786,7 +801,7 @@ extern "C"
 
 		if (nb_value != nb_ID)
 		{
-			return ERROR;
+			return IMPOSSIBLE;
 		}
 		else if (nb_value == nb_ID && nb_value == 0)
 		{
@@ -794,8 +809,8 @@ extern "C"
 		}
 		else
 		{
-			table_value = (float*) malloc(nb_value * sizeof(float));
-			table_id = (unsigned long*) malloc(nb_ID * sizeof(unsigned long));
+			table_value = (float*)malloc(nb_value * sizeof(float));
+			table_id = (unsigned long*)malloc(nb_ID * sizeof(unsigned long));
 
 			extract_values_from_json(filename, table_value, nb_value);
 			extract_ID_from_json(filename, table_id, nb_ID);
@@ -813,7 +828,7 @@ extern "C"
 				}
 				else
 				{
-					stone_T = (facture*) malloc(sizeof(facture));
+					stone_T = (facture*)malloc(sizeof(facture));
 					if (stone_T == NULL)
 					{
 						perror("Parsing du json immpossible , element non généré\n");
@@ -835,34 +850,35 @@ extern "C"
 		}
 	}
 
-	unsigned long get_nb_values(char* file_name)
+	unsigned long get_nb_values(char* filename)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
-		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
-			element = getc(In);
+			element = In.get();
+
 			if (element == 'V' || element == 'v')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'A' || element == 'a')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'L' || element == 'l')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'U' || element == 'u')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
 									indicator = 1;
@@ -876,7 +892,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 					printf("%c\n", element);
 				} while (element != ']' && element != '}');
 			}
@@ -885,46 +901,46 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element != ']')
 				{
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 					}
 				}
 			} while (element != ']');
 		}
 
-		fclose(In);
+		In.close();
 		return nb_elements;
 	}
 
-	unsigned long get_nb_ID(char* file_name)
+	unsigned long get_nb_ID(char* filename)
 	{
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
-		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'I' || element == 'i')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'D' || element == 'd')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == '"')
 					{
 						indicator = 1;
@@ -935,7 +951,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -943,60 +959,60 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element != ']')
 				{
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 					}
 				}
 			} while (element != ']');
 		}
 
-		fclose(In);
+		In.close();
 		return nb_elements;
 	}
 
-	float get_price(char* file_name)
+	float get_price(char* filename)
 	{
 		float price = 1.0;
 		int nb_digits = 0;
 		char element = '\0';
-		FILE* In;
-		errno_t err = fopen_s(&In,file_name, "r");
+		std::ifstream In;
+		In.open(filename);
 		short indicator = 0;
 		char buffer[50];
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'P' || element == 'p')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'R' || element == 'r')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'I' || element == 'i')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'C' || element == 'c')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
-									element = getc(In);
+									element = In.get();
 									if (element == ':')
 									{
 										indicator = 1;
@@ -1011,7 +1027,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -1020,7 +1036,7 @@ extern "C"
 		{
 			while (element != '.' && element != '}')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element != ' ')
 				{
 					buffer[nb_digits] = element;
@@ -1031,7 +1047,7 @@ extern "C"
 			{
 				if (element != '\n')
 				{
-					element = getc(In);
+					element = In.get();
 					buffer[nb_digits + depth] = element;
 				}
 				if (element == '\n')
@@ -1042,7 +1058,7 @@ extern "C"
 		}
 
 		price = atof(buffer);
-		fclose(In);
+		In.close();
 		return price;
 	}
 
@@ -1054,29 +1070,29 @@ extern "C"
 		short precision = 0;
 		short indicator = 0;
 		char buffer[SIZE];
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
-			element = getc(In);
+			element = In.get();
 			if (element == 'V' || element == 'v')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'A' || element == 'a')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'L' || element == 'l')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'U' || element == 'u')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
 									indicator = 1;
@@ -1090,7 +1106,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 					printf("%c\n", element);
 				} while (element != ']' && element != '}');
 			}
@@ -1099,10 +1115,10 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 			do {
-				element = getc(In);
+				element = In.get();
 				precision = 0;
 				nb_elements = 0;
 				while (element != ',' && element != ']')
@@ -1111,13 +1127,13 @@ extern "C"
 					{
 						buffer[nb_elements] = element;
 						nb_elements++;
-						element = getc(In);
+						element = In.get();
 					}
 					buffer[nb_elements] = element;
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element != ',' && element != ']')
 						{
 							buffer[nb_elements] = element;
@@ -1145,7 +1161,7 @@ extern "C"
 				rank++;
 			} while (element != ']');
 		}
-		fclose(In);
+		In.close();
 	}
 
 	void extract_ID_from_json(char* filename, unsigned long* table_id, unsigned long nb_ID)
@@ -1155,21 +1171,21 @@ extern "C"
 		unsigned long rank = 0;
 		short indicator = 0;
 		char buffer[SIZE];
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'I' || element == 'i')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'D' || element == 'd')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == '"')
 					{
 						indicator = 1;
@@ -1180,7 +1196,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -1188,10 +1204,10 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element == ',' || element == ']')
 				{
 					buffer[nb_elements] = '.';
@@ -1207,7 +1223,7 @@ extern "C"
 				}
 			} while (element != ']');
 		}
-		fclose(In);
+		In.close();
 	}
 
 	void reset(char* array, int length)
@@ -1221,7 +1237,7 @@ extern "C"
 	void merging(int low, int mid, int high, float* table_value)
 	{
 		int l1, l2, i;
-		float* buffer_value = (float*) malloc((high + 1) * sizeof(float));
+		float* buffer_value = (float*)malloc((high + 1) * sizeof(float));
 		if (buffer_value == NULL)
 			perror("Merging Imppossible.\n");
 		else
@@ -1268,4 +1284,112 @@ extern "C"
 		}
 	}
 
+
+	//  Pour la conversion nombre -> char*
+	char* long_to_char(long serial)
+	{
+		char* to_return = NULL;
+		long max_power = 1;
+		//Détermine le nombre de chiffre(s)
+		if (serial < 0)
+		{
+			serial = serial * (-1);
+		}
+		if (serial < 10 && serial >= 0)
+		{
+
+			to_return = (char*)malloc(sizeof(char));
+			to_return[0] = digit_convert(serial);
+		}
+		else
+		{
+			max_power = 2;
+			while (serial >= pow(10, max_power))
+			{
+				max_power++;
+			}
+			//On récupère chacun des chiffres et on les met dans un tableau
+			int* table_value = (int*)malloc(max_power * sizeof(int));
+			for (int depth = 0; depth < max_power; depth++)
+			{
+				table_value[depth] = 0;
+			}
+			for (long power = (max_power - 1); power >= 0; power--)
+			{
+				table_value[power] = serial / pow(10, power);
+				serial -= table_value[power] * pow(10, power);
+			}
+			to_return = reverse_and_convert(table_value, max_power);
+		}
+
+		printf("[long_to_char] : %s \n", to_return);
+
+		return to_return;
+	}
+
+	//Prend un tableau d'entier pour les convertir en char , [1,2,3] -> "123"
+	char* reverse_and_convert(int* table_value, long length)
+	{
+		char* buffer = (char*)malloc(length * sizeof(char));
+		for (int i = 0; i < length; i++)
+		{
+			buffer[length - i - 1] = digit_convert(table_value[i]);
+		}
+		return buffer;
+	}
+	//Fais la conrrespondance chiffre char , 1 -> '1'
+	char digit_convert(int digit)
+	{
+		switch (digit) {
+		case 0:
+			return '0';
+			break;
+		case 1:
+			return '1';
+			break;
+		case 2:
+			return '2';
+			break;
+		case 3:
+			return '3';
+			break;
+		case 4:
+			return '4';
+			break;
+		case 5:
+			return '5';
+			break;
+		case 6:
+			return '6';
+			break;
+		case 7:
+			return '7';
+			break;
+		case 8:
+			return '8';
+			break;
+		case 9:
+			return '9';
+			break;
+		default:
+			return '\0';
+			break;
+		}
+	}
+	//  Pour la conversion nombre -> char*
+	char* getOutputFileName(char* inputFileName)
+	{
+		char* extension = (char*)malloc(5 * sizeof(char));
+		extension[0] = '.';
+		extension[1] = 'j';
+		extension[2] = 's';
+		extension[3] = 'o';
+		extension[4] = 'n';
+		int lenght = strlen(inputFileName);
+		char* output = (char*)malloc((lenght + 5) * sizeof(char));
+		errno_t err = strcat_s(output,lenght, inputFileName);
+		err = strcat_s(output, lenght, extension);
+		free(extension);
+		return output;
+	}
 }

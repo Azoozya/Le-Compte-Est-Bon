@@ -1,5 +1,5 @@
 // Lceb.cpp : Définit les fonctions exportées pour l'addon node.
-
+#include <iostream>
 #include <node.h>
 #include <windows.h>
 #include <stdio.h>
@@ -7,7 +7,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-#include <errno.h>
+#include <fstream>
 
 using v8::FunctionCallbackInfo;
 using v8::Isolate;
@@ -19,7 +19,7 @@ using v8::String; // Type V8
 using v8::Value;  // Type V8
 
 #define DLL_EXPORT __declspec(dllexport)
-#define ERROR 63336
+#define IMPOSSIBLE 63336
 #define NOTHING 36663
 #define SIZE 50
 #define min(a,b) (a<=b?a:b)
@@ -71,7 +71,7 @@ extern "C"
 
 	// référencer ici les en-têtes supplémentaires nécessaires à votre programme
 
-	void Lceb(long serial);
+	void Lceb(void);
 	void merging(int low, int mid, int high, float* table_value);
 	void sort(int low, int high, float* table_value);
 
@@ -111,7 +111,7 @@ extern "C"
 	//Lceb_main.c ------------------------------------------------------------------
 
 	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity,char* filename);
-	unsigned long parse_input_json(facture* head, char* fiile_name, float* target);
+	unsigned long parse_input_json(facture* head, char* filename, float* target);
 	void extract_values_from_json(char* filename, float* table_value, unsigned long nb_value);
 	void extract_ID_from_json(char* filename, unsigned long* table_id, unsigned long nb_ID);
 
@@ -134,8 +134,8 @@ namespace v8
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
-	double serial = args[0].As<Number>()->Value();
-	Lceb(serial);
+	//long serial = (long)(args[0].As<Number>()->Value());
+	Lceb();
 }
 
 //On associe le nom 'Lceb' à la fonction Lceb_addon et on l'exporte.
@@ -146,11 +146,24 @@ void Initialize(Local<Object>exports)
 
 NODE_MODULE(addon,Initialize);
 }
+
 extern "C"
 {
-	void Lceb(long serial)
+	void Lceb(void)
 	{
-    char* filename = long_to_char(serial);
+    //char* filename = long_to_char(serial);
+		char* filename = (char*)malloc(11 * sizeof(char));
+		filename[0] = 'I';
+		filename[1] = 'n';
+		filename[2] = 'p';
+		filename[3] = 'u';
+		filename[4] = 't';
+		filename[5] = '.';
+		filename[6] = 'j';
+		filename[7] = 's';
+		filename[8] = 'o';
+		filename[9] = 'n';
+		filename[10] = '\0';
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
 		facture* input = (facture *)malloc(sizeof(facture));
@@ -161,8 +174,10 @@ extern "C"
 		else
 		{
 			float price;
+			printf("[2]\n");
 			unsigned long max_quantity = parse_input_json(input, filename, &price); //isOk
-			if (max_quantity == ERROR)
+			printf("[3]\n");
+			if (max_quantity == IMPOSSIBLE)
 			{
 				printf("Pas autant de factures que d'ID:\n[%lu:Factures]\t[%lu:ID]\n", get_nb_values(filename), get_nb_ID(filename));
 			}
@@ -210,7 +225,7 @@ extern "C"
 		int depth;
 
 		depth = 0;
-		for (int rank = 0; rank < length; rank++)
+		for (unsigned int rank = 0; rank < length; rank++)
 		{
 			//On génère une nouvelle brique élémentaire.
 			stone_E = (counter*) malloc(sizeof(counter));
@@ -256,7 +271,7 @@ extern "C"
 		}
 		else
 		{
-			for (int rank = 0; rank < max_quantity; rank++)
+			for (unsigned int rank = 0; rank < max_quantity; rank++)
 			{
 				table_value[rank] = input_retrieve->value;
 				table_quantity[rank] = 1;
@@ -798,9 +813,9 @@ extern "C"
 
 	void road_to_the_text_file(facture* facture, chenille* head, int max_quantity,char* filename)
 	{
-		FILE* Out;
+		std::ofstream Out;
 		char* file = getOutputFileName(filename);
-		errno_t err = fopen_s(&Out,file, "w");
+		Out.open(file);
 		chenille* chenille_part;
 		stack* stack_part;
 		counter* cell;
@@ -809,22 +824,22 @@ extern "C"
 		int qty_value;
 		int qty_element;
 
-		fprintf(Out, "{\n");
+		Out << "{\n";
 		for (int rank = 1; rank <= max_quantity; rank++)
 		{
 			chenille_part = reach_chenille(rank, head);
 			if (chenille_part->quantity_entities == 0)
 			{
-				fprintf(Out, "\t\t\t%c%d_element%c:{\t},\n\n", '"', rank, '"');
+				Out << "\t\t\t"<< '"' << rank << "_element" << '"' << ":{\t},\n\n";
 			}
 			if (chenille_part->quantity_entities > 0)
 			{
-				fprintf(Out, "\t\t\t%c%d_element%c:{\n", '"', rank, '"');
+				Out << "\t\t\t"<< '"' << rank << "_element" << '"' << ":{\n";
 				//Value:
-				fprintf(Out, "\t\t\t\t%cvalue%c:[\n", '"', '"');
-				for (int depth = 0; depth < chenille_part->quantity_entities; depth++)
+				Out << "\t\t\t\t" << '"' << "value" << '"' << ":[\n";
+				for (unsigned int depth = 0; depth < chenille_part->quantity_entities; depth++)
 				{
-					fprintf(Out, "\t\t\t\t\t\t\t\t[");
+					Out << "\t\t\t\t\t\t\t\t[";
 					stack_part = reach_stack(depth, chenille_part->feet);
 					subrank = 0;
 					qty_element = 1;
@@ -835,29 +850,29 @@ extern "C"
 						{
 							while (qty_value <= cell->quantity)
 							{
-								fprintf(Out, "%f", cell->value);
+								Out << cell->value;
 								qty_value++;
 								if (qty_element != rank)
 								{
-									fprintf(Out, ",");
+									Out << ",";
 									qty_element++;
 								}
 							}
 						}
 						subrank++;
 					} while (cell != reach_last_counter(stack_part->proposition));
-					fprintf(Out, "]");
+					Out << "]";
 					if (depth != (chenille_part->quantity_entities - 1))
-						fprintf(Out, ",\n");
+						Out << ",\n";
 					else
-						fprintf(Out, "\n");
+						Out << "\n";
 				}
-				fprintf(Out, "\t\t\t\t\t\t\t\t],\n");
+				Out << "\t\t\t\t\t\t\t\t],\n";
 				//ID:
-				fprintf(Out, "\t\t\t\t\t%cID%c:[\n", '"', '"');
-				for (int depth = 0; depth < chenille_part->quantity_entities; depth++)
+				Out << "\t\t\t\t\t" << '"' << "ID" << '"' << ":[\n";
+				for (unsigned int depth = 0; depth < chenille_part->quantity_entities; depth++)
 				{
-					fprintf(Out, "\t\t\t\t\t\t\t\t[");
+					Out << "\t\t\t\t\t\t\t\t[";
 					stack_part = reach_stack(depth, chenille_part->feet);
 					subrank = 0;
 					qty_element = 1;
@@ -871,31 +886,31 @@ extern "C"
 							while (qty_value <= cell->quantity)
 							{
 								id = get_id_with_value(cell->value, id, facture);
-								fprintf(Out, "%lu", id);
+								Out << id;
 								qty_value++;
 								if (qty_element != rank)
 								{
-									fprintf(Out, ",");
+									Out << ",";
 									qty_element++;
 								}
 							}
 						}
 						subrank++;
 					} while (cell != reach_last_counter(stack_part->proposition));
-					fprintf(Out, "]");
+					Out << "]";
 					if (depth != (chenille_part->quantity_entities - 1))
-						fprintf(Out, ",\n");
+						Out << ",\n";
 					else
-						fprintf(Out, "\n");
+						Out << "\n";
 				}
-				fprintf(Out, "\t\t\t\t\t\t\t ],\n");
-				fprintf(Out, "\t\t\t\t\t\t\t\t\t},\n\n");
+				Out << "\t\t\t\t\t\t\t ],\n";
+				Out << "\t\t\t\t\t\t\t\t\t},\n\n";
 			}
 			if (chenille_part->quantity_entities < 0)
 				printf("[c->json] Error , quantity_entities < 0\n");
 		}
-		fprintf(Out, "\n},%c", '\0');
-		fclose(Out);
+		Out << "\n}," <<'\0';
+		Out.close();
 	}
 
 	//renvoie la première occurence après l'ID donnée de la value passée en argument dans la structure facture (trié dans l'ordre croissant)
@@ -913,7 +928,7 @@ extern "C"
 
 	void my_memcpy(unsigned int* dest, unsigned int* src, unsigned int size)
 	{
-		for (int rank = 0; rank < size; rank++)
+		for (unsigned int rank = 0; rank < size; rank++)
 		{
 			dest[rank] = src[rank];
 		}
@@ -922,8 +937,11 @@ extern "C"
 	// Entrée : pointeur sur structure facture déjà alloué,pointeur sur un float , le nom du fichier d'entrée , sortie : nombre de factures; Génère la structure facture entière et assigne à price la valeur contenu dans le json.
 	unsigned long parse_input_json(facture* head, char* filename, float* target)
 	{
+		printf("[2.1]\n");
 		unsigned long nb_value = get_nb_values(filename);
+		printf("[2.2]\n");
 		unsigned long nb_ID = get_nb_ID(filename);
+		printf("[2.3]\n");
 		float* table_value;
 		unsigned long* table_id;
 		facture* cursor = NULL;
@@ -931,7 +949,7 @@ extern "C"
 
 		if (nb_value != nb_ID)
 		{
-			return ERROR;
+			return IMPOSSIBLE;
 		}
 		else if (nb_value == nb_ID && nb_value == 0)
 		{
@@ -982,32 +1000,39 @@ extern "C"
 
 	unsigned long get_nb_values(char* filename)
 	{
+		printf("[2.1.1]\n");
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
+
+			printf("[2.1.2]\n");
 			do {
-				element = getc(In);
+				printf("[2.2.1.1] : %s \n", filename);
+				element = In.get();
+				printf("[2.2.1.2]\n");
 			} while (element != '"' && element != '}');
-			element = getc(In);
+			element = In.get();
+
+			printf("[2.2.1.3]\n");
 			if (element == 'V' || element == 'v')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'A' || element == 'a')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'L' || element == 'l')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'U' || element == 'u')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
 									indicator = 1;
@@ -1018,35 +1043,38 @@ extern "C"
 				}
 			}
 
+			printf("[2.2.1.4]\n");
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 					printf("%c\n", element);
 				} while (element != ']' && element != '}');
 			}
 		}
 
+		printf("[2.2.1.5]\n");
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element != ']')
 				{
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 					}
 				}
 			} while (element != ']');
 		}
 
-		fclose(In);
+		printf("[2.2.1.6]\n");
+		In.close();
 		return nb_elements;
 	}
 
@@ -1055,21 +1083,21 @@ extern "C"
 		unsigned long nb_elements = 0;
 		char element = '\0';
 		short indicator = 0;
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'I' || element == 'i')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'D' || element == 'd')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == '"')
 					{
 						indicator = 1;
@@ -1080,7 +1108,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -1088,23 +1116,23 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element != ']')
 				{
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 					}
 				}
 			} while (element != ']');
 		}
 
-		fclose(In);
+		In.close();
 		return nb_elements;
 	}
 
@@ -1113,35 +1141,35 @@ extern "C"
 		float price = 1.0;
 		int nb_digits = 0;
 		char element = '\0';
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		short indicator = 0;
 		char buffer[50];
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'P' || element == 'p')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'R' || element == 'r')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'I' || element == 'i')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'C' || element == 'c')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
-									element = getc(In);
+									element = In.get();
 									if (element == ':')
 									{
 										indicator = 1;
@@ -1156,7 +1184,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -1165,7 +1193,7 @@ extern "C"
 		{
 			while (element != '.' && element != '}')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element != ' ')
 				{
 					buffer[nb_digits] = element;
@@ -1176,7 +1204,7 @@ extern "C"
 			{
 				if (element != '\n')
 				{
-					element = getc(In);
+					element = In.get();
 					buffer[nb_digits + depth] = element;
 				}
 				if (element == '\n')
@@ -1187,7 +1215,7 @@ extern "C"
 		}
 
 		price = atof(buffer);
-		fclose(In);
+		In.close();
 		return price;
 	}
 
@@ -1199,29 +1227,29 @@ extern "C"
 		short precision = 0;
 		short indicator = 0;
 		char buffer[SIZE];
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
-			element = getc(In);
+			element = In.get();
 			if (element == 'V' || element == 'v')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'A' || element == 'a')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == 'L' || element == 'l')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element == 'U' || element == 'u')
 						{
-							element = getc(In);
+							element = In.get();
 							if (element == 'E' || element == 'e')
 							{
-								element = getc(In);
+								element = In.get();
 								if (element == '"')
 								{
 									indicator = 1;
@@ -1235,7 +1263,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 					printf("%c\n", element);
 				} while (element != ']' && element != '}');
 			}
@@ -1244,10 +1272,10 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 			do {
-				element = getc(In);
+				element = In.get();
 				precision = 0;
 				nb_elements = 0;
 				while (element != ',' && element != ']')
@@ -1256,13 +1284,13 @@ extern "C"
 					{
 						buffer[nb_elements] = element;
 						nb_elements++;
-						element = getc(In);
+						element = In.get();
 					}
 					buffer[nb_elements] = element;
 					nb_elements++;
 					while (element != ',' && element != ']')
 					{
-						element = getc(In);
+						element = In.get();
 						if (element != ',' && element != ']')
 						{
 							buffer[nb_elements] = element;
@@ -1290,7 +1318,7 @@ extern "C"
 				rank++;
 			} while (element != ']');
 		}
-		fclose(In);
+		In.close();
 	}
 
 	void extract_ID_from_json(char* filename, unsigned long* table_id, unsigned long nb_ID)
@@ -1300,21 +1328,21 @@ extern "C"
 		unsigned long rank = 0;
 		short indicator = 0;
 		char buffer[SIZE];
-		FILE* In;
-		errno_t err = fopen_s(&In,filename, "r");
+		std::ifstream In;
+		In.open(filename);
 		while (!(indicator) && element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '"' && element != '}');
 
-			element = getc(In);
+			element = In.get();
 			if (element == 'I' || element == 'i')
 			{
-				element = getc(In);
+				element = In.get();
 				if (element == 'D' || element == 'd')
 				{
-					element = getc(In);
+					element = In.get();
 					if (element == '"')
 					{
 						indicator = 1;
@@ -1325,7 +1353,7 @@ extern "C"
 			if (!(indicator))
 			{
 				do {
-					element = getc(In);
+					element = In.get();
 				} while (element != ']' && element != '}');
 			}
 		}
@@ -1333,10 +1361,10 @@ extern "C"
 		if (element != '}')
 		{
 			do {
-				element = getc(In);
+				element = In.get();
 			} while (element != '[');
 			do {
-				element = getc(In);
+				element = In.get();
 				if (element == ',' || element == ']')
 				{
 					buffer[nb_elements] = '.';
@@ -1352,7 +1380,7 @@ extern "C"
 				}
 			} while (element != ']');
 		}
-		fclose(In);
+		In.close();
 	}
 
 	void reset(char* array, int length)
@@ -1418,19 +1446,21 @@ extern "C"
 	char* long_to_char(long serial)
 	{
 	  char* to_return = NULL;
-	//Détermine le nombre de chiffre(s)
+	  long max_power = 1;
+	  //Détermine le nombre de chiffre(s)
 	  if (serial < 0)
 	    {
 	      serial = serial*(-1);
 	    }
 	  if (serial < 10 && serial >= 0)
 	    {
+
 	      to_return = (char*)malloc(sizeof(char));
 	      to_return[0] = digit_convert(serial);
 	    }
 	  else
 	    {
-	      long max_power = 2;
+	      max_power = 2;
 	      while(serial >= pow(10,max_power))
 	        {
 	          max_power++;
@@ -1448,6 +1478,9 @@ extern "C"
 	          }
 	   to_return = reverse_and_convert(table_value,max_power);
 	    }
+
+	  printf("[long_to_char] : %s \n", to_return);
+
 	  return to_return;
 	}
 
@@ -1503,16 +1536,17 @@ extern "C"
 	//  Pour la conversion nombre -> char*
 	char* getOutputFileName(char* inputFileName)
 	{
-	  char* extension = (char*)malloc(5*sizeof(char));
-	  extension[0]='.';
-	  extension[1]='j';
-	  extension[2]='s';
-	  extension[3]='o';
-	  extension[4]='n';
-	  int lenght = strlen(inputFileName);
-	  char* output = (char*)malloc((lenght+5)*sizeof(char));
-	  output = strcat(inputFileName,extension);
-	  free(extension);
-	  return output;
+		char* extension = (char*)malloc(5 * sizeof(char));
+		extension[0] = '.';
+		extension[1] = 'j';
+		extension[2] = 's';
+		extension[3] = 'o';
+		extension[4] = 'n';
+		int lenght = strlen(inputFileName);
+		char* output = (char*)malloc((lenght + 5) * sizeof(char));
+		errno_t err = strcat_s(output, lenght, inputFileName);
+		err = strcat_s(output, lenght, extension);
+		free(extension);
+		return output;
 	}
 }

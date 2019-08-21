@@ -1,0 +1,14 @@
+Dans Visual Studio 20XX:
+	1.Créer un projet C++ -> Librairie Dynamique
+	2.Ecrire le code,sans main,normalement si c'est du C++,mais si c'est du C inscrire les prototypes et les fonctions dans : extern "C" {#CCode}
+	3.ajouter __declspec(dllexport) devant le type de fonction (exemple : __declspec(dllexport) void procedure(void){ #CCode })
+		il est possible de define : #define DLL_EXPORT __declspec(dllexport) et ainsi écrire DLL_EXPORT au lieu de __declspec(dllexxport)
+	
+Pour appeler l'addon :
+	 en C# il faut ajouter :
+		using System.Runtime.InteropServices;
+		
+		 [DllImport("Dll.dll")]
+       		 public static extern void fonction1();  //Prototype de la fonction1 qui a été DLL_EXPORT au préalable
+	 en C/C++ :
+		2 mots clées , __declspec(dllimport) et extern  
