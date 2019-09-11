@@ -11,11 +11,11 @@ namespace Call_Dll
     class Program
     {
         [DllImport("Lceb.dll")]
-        public static extern void Lceb();
+        public static extern void Lceb(long serial);
 
         static void Main(string[] args)
         {
-            Lceb();
+            Lceb(123);
         }
     }
 }

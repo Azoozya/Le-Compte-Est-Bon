@@ -4,3 +4,4 @@ C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll
 C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Call_Dll\bin\Debug\Call_Dll.pdb
 C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Call_Dll\obj\Debug\Call_Dll.exe
 C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Call_Dll\obj\Debug\Call_Dll.pdb
+C:\Users\Nicolas Grosjean\Desktop\Le-Compte-Est-Bon\gen_dll\Windows_src\Call_Dll\Call_Dll\obj\Debug\Call_Dll.csprojAssemblyReference.cache

@@ -6,10 +6,10 @@
 
 extern "C"
 {
-	DLL_EXPORT void Lceb(void)
+	DLL_EXPORT void Lceb(long serial)
 	{
-		//char* filename = long_to_char(serial);
-		char* filename = (char*)malloc(11 * sizeof(char));
+		char* filename = long_to_char(serial);
+		/*char* filename = (char*)malloc(11 * sizeof(char));
 		filename[0] = 'I';
 		filename[1] = 'n';
 		filename[2] = 'p';
@@ -20,7 +20,7 @@ extern "C"
 		filename[7] = 's';
 		filename[8] = 'o';
 		filename[9] = 'n';
-		filename[10] = '\0';
+		filename[10] = '\0';*/
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
 		facture* input = (facture *)malloc(sizeof(facture));
@@ -1379,16 +1379,17 @@ extern "C"
 	//  Pour la conversion nombre -> char*
 	char* getOutputFileName(char* inputFileName)
 	{
-		char* extension = (char*)malloc(5 * sizeof(char));
+		char* extension = (char*)malloc(6 * sizeof(char));
 		extension[0] = '.';
 		extension[1] = 'j';
 		extension[2] = 's';
 		extension[3] = 'o';
 		extension[4] = 'n';
+		extension[5] = '\0';
 		int lenght = strlen(inputFileName);
-		char* output = (char*)malloc((lenght + 5) * sizeof(char));
+		char* output = (char*)malloc((lenght + 6) * sizeof(char));
 		errno_t err = strcat_s(output,lenght, inputFileName);
-		err = strcat_s(output, lenght, extension);
+		err = strcat_s(output,6, extension);
 		free(extension);
 		return output;
 	}

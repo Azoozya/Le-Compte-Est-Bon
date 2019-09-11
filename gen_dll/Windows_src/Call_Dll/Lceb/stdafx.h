@@ -73,7 +73,7 @@ extern "C"
 
 	// référencer ici les en-têtes supplémentaires nécessaires à votre programme
 
-	DLL_EXPORT void Lceb(void);
+	DLL_EXPORT void Lceb(long serial);
 	void merging(int low, int mid, int high, float* table_value);
 	void sort(int low, int high, float* table_value);
 

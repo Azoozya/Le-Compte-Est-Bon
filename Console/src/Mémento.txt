@@ -1,0 +1,34 @@
+Structures C:
+	counter := sert à enregistrer la quantité de factures par valeur , la variable rank correspond au positionnement ordinal de la cellule.
+	facture := sert à enregistrer les factures lues dans le json , 1 cellule par facture.
+	stack := sert pour la génération des propositions , contient l'entrée d'une list de counter (proposition quantitées/valeurs).
+	chenille := LA grosse structure , chacunes des cellules correspondent à un entier entre 0 et le nombre total de factures (la variable rank) qui va contenir l'entrée de la liste de stack.
+
+Agencement et dépendances :
+	Etapes :
+		(*)Nécessite d'être appelé AVEC un argument dans la version console , l'argument correspond au nom du fichier .json dans lequelle récupérer les infos.
+	   [L.18]-1) Extraire les informations avec un parseur sur mesure insensible à la casse, le parseur attend un tableau de nombres (flottants) qui s'appel value , un tableau de nombres 		                     entiers qui s'appel ID et un nombre (flottant) qui s'appel price dans un .json.
+	   [L.32]-2) Génère une structure Chenille , pour le moment les cellules ne pointent pas sur des séries de propositions (des stacks).
+	   [L.37]-3) On appel une fonction récursive qui :
+								-Est composée d'une "tête" qui met en place le contexte et d'une fonction qui s'appel en boucle pour remplir ce contexte.
+								-[2|2|2] il va étudier [0] [0|0] => [0|0] [1] => [0|0] [2] => [0] [1|2] => [0|1] [0] => [0|1] [1] ... => [0] [2|2] => [1|2|2]
+								-Génère toutes les propositions et les évalue , si elle valent le prix recherché la proposition est ajoutée à la série sinon drop.
+	   [L.41]-4) On parcourt la structure chenille pour parcourir l'ensemble des propositions qui ont été générées précédèment.On les inscrit dans un fichier.A ce moment la nous n'avions pas 		             utilisé/copié les ID des factures , on a donc une fonction qui viens faire la correspondance entre valeur de facture et un ID de facture de ce montant(première occurence qui 	                     n'a pas encore été proposée).
+
+	Dépendances :
+		Le parseur à besoin d'avoir un pointeur sur structure facture déjà alloué , elle la complete et renvoie le nombre de factures total.
+		Lors des appels à extract_values_and_quantities_from_chained_list(appelé dans filter_doubles , pour avoir une structure counter rempli sans doublons) la fonction de tri est 				"mergeSort".
+		0 variables globales , 1 chenille qui permet d'accéder à toutes les structures.
+
+
+Aspect un peu plus technique:
+Chaque structure dispose de sa fonction reach_struct(rank,head) qui renvoie un pointeur sur la rank-ième cellule en partant de head et de delete_struct(head) qui free l'ensemble des cellules.Stack et Counter disposent aussi de reach_last_struct(head) qui renvoie un pointeur sur la dernière cellule.
+
+get_id_with_value ; renvoie un ID pas encore demandé en fonction d'une valeur (float) donnée.
+get_price ; get_nb_ID ; get_nb_values; 	permet de déterminer le nombre de place à prévoir pour les tableaux de valeurs , permet aussi de vérifier si il y'a autant d'ID que de factures.
+extract_ID_from_json ; extract_values_from_json; remplissent des tableaux de floats/unsigned long passés en paramètre(ne supprime pas les doublons).
+parse_input_json ; formalise les données extraitent avec extract_*_from_json pour générer une structure facture (non trié , d'appelation stoneT).
+
+generate_stone_E ; generate_stone_T ; generate_chenille_body ; 
+extract_values_from_chained_list; pour extraire les valeurs des factures présentes dans la structure counter et les inscrire dans un tableau de float (Ne trie pas , ne filtre pas les doublons)
+extract_values_and_quantities_from_chained_list ; extrait les valeurs des factures pour les inscrire dans un tableau de valeur et un tableau de qty , (Filtre les doublons mais ne tri pas)

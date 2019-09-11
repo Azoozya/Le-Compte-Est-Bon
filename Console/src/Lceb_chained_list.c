@@ -268,6 +268,7 @@ counter* reach_counter(int rank,counter* head)
       return pointeur;
     }
 }
+
 //Pour accéder directement à la dernière cellule d'une structure counter.
 counter* reach_last_counter(counter* stone)
 {
