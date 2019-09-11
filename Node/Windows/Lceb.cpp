@@ -71,7 +71,7 @@ extern "C"
 
 	// référencer ici les en-têtes supplémentaires nécessaires à votre programme
 
-	void Lceb(void);
+	void Lceb(long serial);
 	void merging(int low, int mid, int high, float* table_value);
 	void sort(int low, int high, float* table_value);
 
@@ -134,8 +134,8 @@ namespace v8
 void Lceb_addon(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
-	//long serial = (long)(args[0].As<Number>()->Value());
-	Lceb();
+	long serial = (long)(args[0].As<Number>()->Value());
+	Lceb(serial);
 }
 
 //On associe le nom 'Lceb' à la fonction Lceb_addon et on l'exporte.
@@ -149,21 +149,21 @@ NODE_MODULE(addon,Initialize);
 
 extern "C"
 {
-	void Lceb(void)
+	void Lceb(long serial)
 	{
-    //char* filename = long_to_char(serial);
-		char* filename = (char*)malloc(11 * sizeof(char));
-		filename[0] = 'I';
-		filename[1] = 'n';
-		filename[2] = 'p';
-		filename[3] = 'u';
-		filename[4] = 't';
-		filename[5] = '.';
-		filename[6] = 'j';
-		filename[7] = 's';
-		filename[8] = 'o';
-		filename[9] = 'n';
-		filename[10] = '\0';
+    char* filename = long_to_char(serial);
+		// char* filename = (char*)malloc(11 * sizeof(char));
+		// filename[0] = 'I';
+		// filename[1] = 'n';
+		// filename[2] = 'p';
+		// filename[3] = 'u';
+		// filename[4] = 't';
+		// filename[5] = '.';
+		// filename[6] = 'j';
+		// filename[7] = 's';
+		// filename[8] = 'o';
+		// filename[9] = 'n';
+		// filename[10] = '\0';
 		printf("[ 0-5 ]Extraction des informations contenues dans %s.\n", filename);
 		//On extrait les infos : price , qty_elements , struct facture du json
 		facture* input = (facture *)malloc(sizeof(facture));
@@ -1466,7 +1466,7 @@ extern "C"
 	          max_power++;
 	        }
 	    //On récupère chacun des chiffres et on les met dans un tableau
-	    int* table_value = (int*)malloc(max_power*sizeof(int));
+	    int* table_value = (int*)malloc((max_power+1)*sizeof(int));
 	    for (int depth = 0 ; depth < max_power ; depth++)
 	      {
 	        table_value[depth] = 0;
@@ -1477,6 +1477,7 @@ extern "C"
 	            serial -=  table_value[power]*pow(10,power);
 	          }
 	   to_return = reverse_and_convert(table_value,max_power);
+		 to_return[max_power] = '\0';
 	    }
 
 	  printf("[long_to_char] : %s \n", to_return);
@@ -1536,17 +1537,19 @@ extern "C"
 	//  Pour la conversion nombre -> char*
 	char* getOutputFileName(char* inputFileName)
 	{
-		char* extension = (char*)malloc(5 * sizeof(char));
-		extension[0] = '.';
-		extension[1] = 'j';
-		extension[2] = 's';
-		extension[3] = 'o';
-		extension[4] = 'n';
 		int lenght = strlen(inputFileName);
-		char* output = (char*)malloc((lenght + 5) * sizeof(char));
-		errno_t err = strcat_s(output, lenght, inputFileName);
-		err = strcat_s(output, lenght, extension);
-		free(extension);
+		char* output = (char*)malloc((lenght + 6) * sizeof(char));
+		for (int rank = 0; rank < lenght-1; rank++)
+			{
+				output[rank] = inputFileName[rank];
+			}
+			output[lenght] = '.';
+			output[lenght+1] = 'j';
+			output[lenght+2] = 's';
+			output[lenght+3] = 'o';
+			output[lenght+4] = 'n';
+			output[lenght+5] = '\0';
+
 		return output;
 	}
 }

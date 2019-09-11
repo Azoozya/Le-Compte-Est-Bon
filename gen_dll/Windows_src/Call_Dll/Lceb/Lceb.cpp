@@ -1057,7 +1057,7 @@ extern "C"
 			}
 		}
 
-		price = atof(buffer);
+		price = (float)atof(buffer);
 		In.close();
 		return price;
 	}
@@ -1150,7 +1150,7 @@ extern "C"
 						nb_elements++;
 					}
 				}
-				table_value[rank] = atof(buffer);
+				table_value[rank] = (float)atof(buffer);
 				// for(int rank = 0 ; rank < SIZE ; rank++)
 				//   {
 				//     printf("%c|",buffer[rank]);
@@ -1298,8 +1298,9 @@ extern "C"
 		if (serial < 10 && serial >= 0)
 		{
 
-			to_return = (char*)malloc(sizeof(char));
+			to_return = (char*)malloc(2*sizeof(char));
 			to_return[0] = digit_convert(serial);
+			to_return[1];
 		}
 		else
 		{
@@ -1309,17 +1310,18 @@ extern "C"
 				max_power++;
 			}
 			//On récupère chacun des chiffres et on les met dans un tableau
-			int* table_value = (int*)malloc(max_power * sizeof(int));
+			int* table_value = (int*)malloc(max_power+1 * sizeof(int));
 			for (int depth = 0; depth < max_power; depth++)
 			{
 				table_value[depth] = 0;
 			}
 			for (long power = (max_power - 1); power >= 0; power--)
 			{
-				table_value[power] = serial / pow(10, power);
-				serial -= table_value[power] * pow(10, power);
+				table_value[power] = serial / (int)pow(10,power);
+				serial -= table_value[power] * (int)pow(10, power);
 			}
 			to_return = reverse_and_convert(table_value, max_power);
+			to_return[max_power] = '\0';
 		}
 
 		printf("[long_to_char] : %s \n", to_return);
@@ -1379,18 +1381,18 @@ extern "C"
 	//  Pour la conversion nombre -> char*
 	char* getOutputFileName(char* inputFileName)
 	{
-		char* extension = (char*)malloc(6 * sizeof(char));
-		extension[0] = '.';
-		extension[1] = 'j';
-		extension[2] = 's';
-		extension[3] = 'o';
-		extension[4] = 'n';
-		extension[5] = '\0';
 		int lenght = strlen(inputFileName);
 		char* output = (char*)malloc((lenght + 6) * sizeof(char));
-		errno_t err = strcat_s(output,lenght, inputFileName);
-		err = strcat_s(output,6, extension);
-		free(extension);
+		for (int rank = 0; rank < lenght - 1; rank++)
+		{
+			output[rank] = inputFileName[rank];
+		}
+		output[lenght] = '.';
+		output[lenght + 1] = 'j';
+		output[lenght + 2] = 's';
+		output[lenght + 3] = 'o';
+		output[lenght + 4] = 'n';
+		output[lenght + 5] = '\0';
 		return output;
 	}
 }
